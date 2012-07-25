@@ -1,0 +1,7 @@
+# Code Blocks Files #
+*.cbp
+*.depend
+*.layout
+# Compiled files #
+bin/*
+obj/*
