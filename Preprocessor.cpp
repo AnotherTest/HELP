@@ -67,13 +67,15 @@ void Preprocessor::addMacro(const std::string& line)
 void Preprocessor::addMacros()
 {
     HELP_ASSERT(aliases.size() == 0);
-    for(auto it = lines.begin(); it != lines.end(); ++it) {
+    auto it = lines.begin();
+    while(it != lines.end()) {
         if(it->length() > 0 && it->at(0) == '#') {
             trim(*it);
             mergeLines(it);
             addMacro(it->substr(1));
             lines.erase(it);
-        }
+        } else
+            ++it;
     }
 }
 
@@ -87,10 +89,8 @@ void Preprocessor::applyMacros()
     for(std::string s : lines)
         source += s + '\n';
     trim(source);
-    std::cout << source << std::endl;
     // replaces
     for(auto pair : aliases) {
-        std::cout << pair.first << " - " << pair.second << std::endl;
         regex pattern(pair.first);
         applyMacro(pattern, pair.second);
     }
