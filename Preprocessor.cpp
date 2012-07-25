@@ -60,7 +60,6 @@ void Preprocessor::addMacro(const std::string& line)
     std::string name = line.substr(0, pos);
     trim(name);
     std::string replacement = line.substr(pos + 2);
-    trim(replacement);
     aliases.insert(std::make_pair(name, replacement));
 }
 
