@@ -1,0 +1,25 @@
+# depslib dependency file v1.0
+1343218221 source:/home/tim/Documents/CodeBlocks_Projects/HELPreprocessor/main.cpp
+	"Preprocessor.h"
+
+1343204107 source:/home/tim/Documents/CodeBlocks_Projects/HELPreprocessor/HelpAssert.cpp
+	"HelpAssert.h"
+
+1343204153 /home/tim/Documents/CodeBlocks_Projects/HELPreprocessor/HelpAssert.h
+	<iostream>
+	<cstdlib>
+
+1343210679 source:/home/tim/Documents/CodeBlocks_Projects/HELPreprocessor/Preprocessor.cpp
+	"Preprocessor.h"
+
+1343218310 /home/tim/Documents/CodeBlocks_Projects/HELPreprocessor/Preprocessor.h
+	<iostream>
+	<fstream>
+	<stdexcept>
+	<string>
+	<map>
+	<utility>
+	<vector>
+	<boost/regex.hpp>
+	"HelpAssert.h"
+
