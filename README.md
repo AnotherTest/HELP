@@ -1,6 +1,4 @@
-#···············································
-#: HELP - Handy Esoteric Language Preprocessor :
-#···············································
+#HELP - Handy Esoteric Language Preprocessor
 
 * For developers:
 
@@ -21,7 +19,8 @@
 
 * HELP example:
 
-	"# something (\d+) := $1 something
-	something 10"
+		# something (\d+) := $1 something
+
+		something 10
 
 	Will be substituted to: "10 something"
