@@ -1,3 +1,0 @@
-# something (\d+) := $1 something
-
-something 10
