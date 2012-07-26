@@ -27,11 +27,11 @@ void Preprocessor::parseEscape(std::string& s, const std::string& escp, const st
 
 void Preprocessor::parseEscapes(std::string& s)
 {
+    parseEscape(s, "\\\\", "\\");
     parseEscape(s, "\\n", "\n");
     parseEscape(s, "\\s", " ");
     parseEscape(s, "\\t", "\t");
     parseEscape(s, "\\v", "\v");
-    parseEscape(s, "\\\\", "\\");
 }
 
 void Preprocessor::readFile()
