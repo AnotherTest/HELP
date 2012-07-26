@@ -7,9 +7,8 @@
 #include <fstream>
 #include <stdexcept>
 #include <string>
-#include <map>
-#include <utility>
 #include <vector>
+#include <sstream>
 
 #include <boost/regex.hpp>
 
@@ -23,17 +22,39 @@ using boost::regex;
  */
 void trim(std::string& s);
 
+class Alias {
+    std::string to_replace;
+    std::string replacement;
+public:
+    Alias(const std::string& tr, const std::string& r)
+        : to_replace(tr), replacement(r) {}
+
+    std::string getRegex() const
+    {
+        return to_replace;
+    }
+
+    std::string getReplacement() const
+    {
+        return replacement;
+    }
+};
+
 /**
  * Represents the HELPreprocessor.
  */
 class Preprocessor {
     using Error = std::runtime_error;
-    using AliasMap = std::map<std::string, std::string>;
+    using AliasMap = std::vector<Alias>;
 
     std::string file_name;
     std::vector<std::string> lines;
     std::string source;
     AliasMap aliases;
+
+    void parseEscape(std::string& s, const std::string& escp, const std::string& repl);
+
+    void parseEscapes(std::string& s);
 
     /**
      * @pre lines.size() == 0
@@ -41,6 +62,11 @@ class Preprocessor {
     void readFile();
 
     void writeFile();
+
+    /**
+     * @pre lines.size() == 0
+     */
+    void processSource();
 
     /**
      * @pre it != lines.end()
@@ -58,6 +84,7 @@ class Preprocessor {
 
     void applyMacros();
 
+    void cleanUp();
 public:
     Preprocessor(const std::string& f);
 

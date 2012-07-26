@@ -18,18 +18,36 @@ void trim(std::string& s)
 Preprocessor::Preprocessor(const std::string& f)
     : file_name(f), lines(), source(), aliases() {}
 
+void Preprocessor::parseEscape(std::string& s, const std::string& escp, const std::string& repl)
+{
+    size_t pos;
+    while((pos = s.find(escp)) != std::string::npos)
+        s.replace(pos, escp.length(), repl);
+}
+
+void Preprocessor::parseEscapes(std::string& s)
+{
+    parseEscape(s, "\\n", "\n");
+    parseEscape(s, "\\s", " ");
+    parseEscape(s, "\\t", "\t");
+    parseEscape(s, "\\v", "\v");
+    parseEscape(s, "\\\\", "\\");
+}
+
 void Preprocessor::readFile()
 {
     HELP_ASSERT(lines.size() == 0);
     std::ifstream ifs(file_name);
     if(!ifs.is_open())
         throw Error("cannot open file " + file_name);
+    ifs.seekg(0, std::ios::end);
+    size_t len = ifs.tellg();
+    ifs.seekg(0, std::ios::beg);
+    char* buffer = new char[len];
+    ifs.read(buffer, len);
+    source = buffer;
 
-    while(ifs.good()) {
-        std::string line;
-        std::getline(ifs, line);
-        lines.push_back(line);
-    }
+    delete buffer;
     ifs.close();
 }
 
@@ -39,6 +57,19 @@ void Preprocessor::writeFile()
     ofs << source;
     ofs.flush();
     ofs.close();
+}
+
+void Preprocessor::processSource()
+{
+    HELP_ASSERT(lines.size() == 0);
+    std::istringstream iss(source);
+    while(iss.good()) {
+        std::string line;
+        std::getline(iss, line);
+        lines.push_back(line);
+    }
+    addMacros();
+    applyMacros();
 }
 
 int Preprocessor::mergeLines(std::vector<std::string>::iterator& it)
@@ -60,7 +91,9 @@ void Preprocessor::addMacro(const std::string& line)
     std::string name = line.substr(0, pos);
     trim(name);
     std::string replacement = line.substr(pos + 2);
-    aliases.insert(std::make_pair(name, replacement));
+    trim(replacement);
+    parseEscapes(replacement);
+    aliases.push_back(Alias(name, replacement));
 }
 
 void Preprocessor::addMacros()
@@ -85,21 +118,34 @@ void Preprocessor::applyMacro(const regex& ex, const std::string& replacement)
 
 void Preprocessor::applyMacros()
 {
+    if(!source.empty())
+        source.clear();
     for(std::string s : lines)
         source += s + '\n';
     trim(source);
     // replaces
-    for(auto pair : aliases) {
-        regex pattern(pair.first);
-        applyMacro(pattern, pair.second);
+    for(auto alias : aliases) {
+        regex pattern(alias.getRegex());
+        applyMacro(pattern, alias.getReplacement());
     }
+}
+
+void Preprocessor::cleanUp()
+{
+    lines.clear();
+    aliases.clear();
 }
 
 void Preprocessor::process()
 {
     HELP_ASSERT(lines.size() == 0);
     readFile();
-    addMacros();
-    applyMacros();
+    std::string old_src;
+    do {
+        old_src = source;
+        processSource();
+        cleanUp();
+    } while(old_src != source); // continue processing until nothing left to process
+
     writeFile();
 }
