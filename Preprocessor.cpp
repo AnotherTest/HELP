@@ -13,21 +13,47 @@ void trim(std::string& s)
         s.erase(s.length() - 1, 1);
 }
 
+std::string removeWs(const std::string& s)
+{
+    std::string r;
+    for(char c : s) {
+        if(!std::isspace(c))
+            r += c;
+    }
+    return r;
+}
+
+std::string reduceWs(const std::string& s)
+{
+    std::string r;
+    for(char c : s) {
+        if(!std::isspace(c))
+            r += c;
+        else if(!std::isspace(r[r.size() - 1]))
+            r += ' ';
+    }
+    return r;
+}
+
 // Preprocessor implementation starts here
 
 Preprocessor::Preprocessor(const std::string& f)
-    : file_name(f), lines(), source(), aliases() {}
+    : file_name(f), lines(), source(), aliases(), rm_ws(false), rd_ws(false) {}
 
 void Preprocessor::parseEscape(std::string& s, const std::string& escp, const std::string& repl)
 {
-    size_t pos;
-    while((pos = s.find(escp)) != std::string::npos)
+    size_t pos = 0;
+    while((pos = s.find(escp, pos)) != std::string::npos) {
+        if(s[pos - 1] == '\\') {
+            pos += escp.length();
+            continue;
+        }
         s.replace(pos, escp.length(), repl);
+    }
 }
 
 void Preprocessor::parseEscapes(std::string& s)
 {
-    parseEscape(s, "\\\\", "\\");
     parseEscape(s, "\\n", "\n");
     parseEscape(s, "\\s", " ");
     parseEscape(s, "\\t", "\t");
@@ -85,9 +111,21 @@ int Preprocessor::mergeLines(std::vector<std::string>::iterator& it)
     return n;
 }
 
+void Preprocessor::handleSpecialMacro(std::string line)
+{
+    trim(line);
+    if(line == "skip whitespace")
+        rm_ws = true;
+    else if(line == "reduce whitespace")
+        rd_ws = true;
+}
+
 void Preprocessor::addMacro(const std::string& line)
 {
     size_t pos = line.find(":=");
+    if(pos == std::string::npos)
+        handleSpecialMacro(line);
+
     std::string name = line.substr(0, pos);
     trim(name);
     std::string replacement = line.substr(pos + 2);
@@ -111,7 +149,7 @@ void Preprocessor::addMacros()
     }
 }
 
-void Preprocessor::applyMacro(const regex& ex, const std::string& replacement)
+void Preprocessor::applyMacro(const regex& ex, std::string replacement)
 {
     source = boost::regex_replace(source, ex, replacement);
 }
@@ -146,6 +184,10 @@ void Preprocessor::process()
         processSource();
         cleanUp();
     } while(old_src != source); // continue processing until nothing left to process
+
+    if(rd_ws)
+        source = reduceWs(source);
+    source = rm_ws ? removeWs(source) : source;
 
     writeFile();
 }

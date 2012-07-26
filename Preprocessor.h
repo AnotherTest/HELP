@@ -22,6 +22,10 @@ using boost::regex;
  */
 void trim(std::string& s);
 
+std::string removeWs(const std::string& s);
+
+void replace_all(std::string& s, const std::string& tr, const std::string& r);
+
 class Alias {
     std::string to_replace;
     std::string replacement;
@@ -51,6 +55,7 @@ class Preprocessor {
     std::vector<std::string> lines;
     std::string source;
     AliasMap aliases;
+    bool rm_ws, rd_ws;
 
     void parseEscape(std::string& s, const std::string& escp, const std::string& repl);
 
@@ -73,6 +78,8 @@ class Preprocessor {
      */
     int mergeLines(std::vector<std::string>::iterator& it);
 
+    void handleSpecialMacro(std::string line);
+
     void addMacro(const std::string& line);
 
     /**
@@ -80,7 +87,7 @@ class Preprocessor {
      */
     void addMacros();
 
-    void applyMacro(const regex& ex, const std::string& replacement);
+    void applyMacro(const regex& ex, std::string replacement);
 
     void applyMacros();
 
