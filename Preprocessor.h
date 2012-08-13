@@ -29,11 +29,12 @@ void replace_all(std::string& s, const std::string& tr, const std::string& r);
 class Alias {
     std::string to_replace;
     std::string replacement;
+    regex regular;
 public:
     Alias(const std::string& tr, const std::string& r)
-        : to_replace(tr), replacement(r) {}
+        : to_replace(tr), replacement(r), regular(tr) {}
 
-    std::string getRegex() const
+    std::string getRegexString() const
     {
         return to_replace;
     }
@@ -41,6 +42,11 @@ public:
     std::string getReplacement() const
     {
         return replacement;
+    }
+
+    regex getRegex() const
+    {
+        return regular;
     }
 };
 
@@ -63,6 +69,7 @@ class Preprocessor {
 
     /**
      * @pre lines.size() == 0
+     * @pre source.empty() == true
      */
     void readFile();
 

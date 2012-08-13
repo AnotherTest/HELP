@@ -11,6 +11,12 @@
 		* Documentation!
         
 		* Better code! (more C++11)
+        
+		* An include directive!
+
+		* More testing of invariants.
+
+		* Automated tests.
 
 * What is HELP?
     
@@ -19,7 +25,7 @@
 
 * HELP example:
 
-		# something (\d+) := $1 something
+		# something (\d+) := \1 something
 
 		something 10
 

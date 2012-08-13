@@ -63,6 +63,7 @@ void Preprocessor::parseEscapes(std::string& s)
 void Preprocessor::readFile()
 {
     HELP_ASSERT(lines.size() == 0);
+    HELP_ASSERT(source.empty() == true);
     std::ifstream ifs(file_name);
     if(!ifs.is_open())
         throw Error("cannot open file " + file_name);
@@ -71,10 +72,9 @@ void Preprocessor::readFile()
     ifs.seekg(0, std::ios::beg);
     char* buffer = new char[len];
     ifs.read(buffer, len);
-    source = buffer;
-
-    delete buffer;
+    source.assign(buffer, len);
     ifs.close();
+    delete buffer;
 }
 
 void Preprocessor::writeFile()
@@ -162,10 +162,8 @@ void Preprocessor::applyMacros()
         source += s + '\n';
     trim(source);
     // replaces
-    for(auto alias : aliases) {
-        regex pattern(alias.getRegex());
-        applyMacro(pattern, alias.getReplacement());
-    }
+    for(auto alias : aliases)
+        applyMacro(alias.getRegex(), alias.getReplacement());
 }
 
 void Preprocessor::cleanUp()
