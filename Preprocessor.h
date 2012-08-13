@@ -3,6 +3,10 @@
  * Contains the actual HELPreprocessor (as the Preprocessor class).
  * @author Tim Beyne
  */
+
+#ifndef _HELPREPROCESSOR_GUARD
+#define _HELPREPROCESSOR_GUARD
+
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
@@ -107,3 +111,5 @@ public:
      */
     void process();
 };
+
+#endif // _HELPREPROCESSOR_GUARD

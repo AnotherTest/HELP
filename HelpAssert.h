@@ -4,8 +4,8 @@
  * Contains the macros and functions required for HELP_ASSERT.
  * @author Tim Beyne
  */
-#ifndef _GREENHOUSE_ASSERT_GUARD
-#define _GREENHOUSE_ASSERT_GUARD
+#ifndef _HELP_ASSERT_GUARD
+#define _HELP_ASSERT_GUARD
 
 #include <iostream>
 
@@ -27,5 +27,5 @@ namespace HelpAssertion {
     #define HELP_ASSERT(x) ((void)sizeof(x))
 #endif
 
-#endif // _GREENHOUSE_ASSERT_GUARD
+#endif // _HELP_ASSERT_GUARD
 
