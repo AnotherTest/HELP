@@ -28,7 +28,9 @@ void trim(std::string& s);
 
 std::string removeWs(const std::string& s);
 
-void replace_all(std::string& s, const std::string& tr, const std::string& r);
+std::string file_extension(const std::string& filename);
+
+std::string file_directory(const std::string& filepath);
 
 class Alias {
     std::string to_replace;
@@ -75,14 +77,16 @@ class Preprocessor {
      * @pre lines.size() == 0
      * @pre source.empty() == true
      */
-    void readFile();
+    void readFile(const std::string& name);
 
     void writeFile();
+
+    void processSource();
 
     /**
      * @pre lines.size() == 0
      */
-    void processSource();
+    void analyseSource();
 
     /**
      * @pre it != lines.end()
@@ -93,9 +97,6 @@ class Preprocessor {
 
     void addMacro(const std::string& line);
 
-    /**
-     * @pre aliases.size() == 0
-     */
     void addMacros();
 
     void applyMacro(const regex& ex, std::string replacement);
@@ -103,6 +104,8 @@ class Preprocessor {
     void applyMacros();
 
     void cleanUp();
+
+    void applyHelpFile();
 public:
     Preprocessor(const std::string& f);
 

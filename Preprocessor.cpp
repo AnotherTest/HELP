@@ -35,6 +35,18 @@ std::string reduceWs(const std::string& s)
     return r;
 }
 
+std::string file_extension(const std::string& filename)
+{
+    size_t pos = filename.find_last_of('.');
+    return (pos == std::string::npos) ? "" : filename.substr(pos + 1);
+}
+
+std::string file_directory(const std::string& filepath)
+{
+    size_t pos = filepath.find_last_of('/');
+    return (pos == std::string::npos) ? "" : filepath.substr(0, pos + 1);
+}
+
 // Preprocessor implementation starts here
 
 Preprocessor::Preprocessor(const std::string& f)
@@ -60,13 +72,13 @@ void Preprocessor::parseEscapes(std::string& s)
     parseEscape(s, "\\v", "\v");
 }
 
-void Preprocessor::readFile()
+void Preprocessor::readFile(const std::string& name)
 {
     HELP_ASSERT(lines.size() == 0);
     HELP_ASSERT(source.empty() == true);
-    std::ifstream ifs(file_name);
+    std::ifstream ifs(name);
     if(!ifs.is_open())
-        throw Error("cannot open file " + file_name);
+        throw Error("cannot open file " + name);
     ifs.seekg(0, std::ios::end);
     size_t len = ifs.tellg();
     ifs.seekg(0, std::ios::beg);
@@ -87,6 +99,12 @@ void Preprocessor::writeFile()
 
 void Preprocessor::processSource()
 {
+    analyseSource();
+    applyMacros();
+}
+
+void Preprocessor::analyseSource()
+{
     HELP_ASSERT(lines.size() == 0);
     std::istringstream iss(source);
     while(iss.good()) {
@@ -95,7 +113,6 @@ void Preprocessor::processSource()
         lines.push_back(line);
     }
     addMacros();
-    applyMacros();
 }
 
 int Preprocessor::mergeLines(std::vector<std::string>::iterator& it)
@@ -115,9 +132,9 @@ void Preprocessor::handleSpecialMacro(std::string line)
 {
     trim(line);
     if(line == "skip whitespace")
-        rm_ws = true;
+        rm_ws = !rm_ws;
     else if(line == "reduce whitespace")
-        rd_ws = true;
+        rd_ws = !rd_ws;
 }
 
 void Preprocessor::addMacro(const std::string& line)
@@ -136,7 +153,6 @@ void Preprocessor::addMacro(const std::string& line)
 
 void Preprocessor::addMacros()
 {
-    HELP_ASSERT(aliases.size() == 0);
     auto it = lines.begin();
     while(it != lines.end()) {
         if(it->length() > 0 && it->at(0) == '#') {
@@ -172,10 +188,25 @@ void Preprocessor::cleanUp()
     aliases.clear();
 }
 
+void Preprocessor::applyHelpFile()
+{
+    std::string help_file = file_directory(file_name) + file_extension(file_name) + ".help";
+    std::ifstream hfs(help_file);
+    if(!hfs.is_open())
+        return;
+    hfs.close();
+    std::cout << "Using HELP file: " << help_file << '.' << std::endl;
+    readFile(help_file);
+    analyseSource();
+    lines.clear();
+    source.clear();
+}
+
 void Preprocessor::process()
 {
     HELP_ASSERT(lines.size() == 0);
-    readFile();
+    applyHelpFile();
+    readFile(file_name);
     std::string old_src;
     do {
         old_src = source;
