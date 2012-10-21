@@ -11,8 +11,6 @@
 		* Documentation!
         
 		* Better code! (more C++11)
-        
-		* An include directive!
 
 		* More testing of invariants.
 
