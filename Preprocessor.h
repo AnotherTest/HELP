@@ -62,6 +62,7 @@ public:
 class Preprocessor {
     using Error = std::runtime_error;
     using AliasMap = std::vector<Alias>;
+    using LineIterator = std::vector<std::string>::iterator;
 
     std::string file_name;
     std::vector<std::string> lines;
@@ -91,11 +92,13 @@ class Preprocessor {
     /**
      * @pre it != lines.end()
      */
-    int mergeLines(std::vector<std::string>::iterator& it);
+    int mergeLines(const LineIterator& it);
 
-    void handleSpecialMacro(std::string line);
+    void handleIncludeMacro(const std::string& file, const LineIterator& line);
 
-    void addMacro(const std::string& line);
+    void handleSpecialMacro(const LineIterator& line);
+
+    void addMacro(const LineIterator& line);
 
     void addMacros();
 

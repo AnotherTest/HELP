@@ -86,7 +86,7 @@ void Preprocessor::readFile(const std::string& name)
     ifs.read(buffer, len);
     source.assign(buffer, len);
     ifs.close();
-    delete buffer;
+    delete[] buffer;
 }
 
 void Preprocessor::writeFile()
@@ -115,7 +115,7 @@ void Preprocessor::analyseSource()
     addMacros();
 }
 
-int Preprocessor::mergeLines(std::vector<std::string>::iterator& it)
+int Preprocessor::mergeLines(const LineIterator& it)
 {
     HELP_ASSERT(it != lines.end());
     int n = 0;
@@ -128,24 +128,39 @@ int Preprocessor::mergeLines(std::vector<std::string>::iterator& it)
     return n;
 }
 
-void Preprocessor::handleSpecialMacro(std::string line)
+void Preprocessor::handleIncludeMacro(const std::string& file, const LineIterator& line)
 {
-    trim(line);
-    if(line == "skip whitespace")
-        rm_ws = !rm_ws;
-    else if(line == "reduce whitespace")
-        rd_ws = !rd_ws;
+    std::ifstream ifs(file);
+    if(!ifs)
+        throw Error("cannot not open #included file " + file);
+    std::string l;
+    LineIterator it = line;
+    while(std::getline(ifs, l))
+        it = lines.insert(it, l) + 1;
+    ifs.close();
 }
 
-void Preprocessor::addMacro(const std::string& line)
+void Preprocessor::handleSpecialMacro(const LineIterator& line)
 {
-    size_t pos = line.find(":=");
-    if(pos == std::string::npos)
-        handleSpecialMacro(line);
+    trim(*line);
+    if(*line == "skip whitespace")
+        rm_ws = !rm_ws;
+    else if(*line == "reduce whitespace")
+        rd_ws = !rd_ws;
+    else if(line->substr(0, 7) == "include")
+        handleIncludeMacro(line->substr(line->find(' ') + 1), line);
+}
 
-    std::string name = line.substr(0, pos);
+void Preprocessor::addMacro(const LineIterator& line)
+{
+    *line = line->substr(1);
+    size_t pos = line->find(":=");
+    if(pos == std::string::npos)
+        return handleSpecialMacro(line);
+
+    std::string name = line->substr(0, pos);
     trim(name);
-    std::string replacement = line.substr(pos + 2);
+    std::string replacement = line->substr(pos + 2);
     trim(replacement);
     parseEscapes(replacement);
     aliases.push_back(Alias(name, replacement));
@@ -158,8 +173,10 @@ void Preprocessor::addMacros()
         if(it->length() > 0 && it->at(0) == '#') {
             trim(*it);
             mergeLines(it);
-            addMacro(it->substr(1));
-            lines.erase(it);
+            size_t size = lines.size();
+            size_t pos = std::distance(lines.begin(), it);
+            addMacro(it);
+            it = lines.erase(lines.begin() + pos + lines.size() - size);
         } else
             ++it;
     }
